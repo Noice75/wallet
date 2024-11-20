@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import './screens/home_page.dart';
+import './database/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper.instance.database; // Initialize the database
+  
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
     ),
   );
+  
   runApp(const MyApp());
 }
 
@@ -44,4 +49,10 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
 

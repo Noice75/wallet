@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
+import '../models/category.dart';
+import 'create_category_modal.dart';
 
-class CategorySelectionModal extends StatelessWidget {
+class CategorySelectionModal extends StatefulWidget {
   const CategorySelectionModal({super.key});
 
+  @override
+  State<CategorySelectionModal> createState() => _CategorySelectionModalState();
+}
+
+class _CategorySelectionModalState extends State<CategorySelectionModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,7 +38,7 @@ class CategorySelectionModal extends StatelessWidget {
                 Row(
                   children: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context, null),
                       child: const Text(
                         'Skip',
                         style: TextStyle(
@@ -40,7 +48,7 @@ class CategorySelectionModal extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context, null),
                       icon: const Icon(Icons.close),
                       color: Colors.white,
                     ),
@@ -50,80 +58,52 @@ class CategorySelectionModal extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _buildCategoryChip(
-                    icon: Icons.restaurant,
-                    label: 'Food & Drinks',
-                    color: const Color(0xFF00D8A5),
-                    onTap: () => Navigator.pop(context, 'Food & Drinks'),
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: DatabaseHelper.instance.getAllCategories(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final categories =
+                    snapshot.data!.map((map) => Category.fromMap(map)).toList();
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      ...categories.map((category) => _buildCategoryChip(
+                            icon: IconData(
+                              int.parse(category.icon, radix: 16),
+                              fontFamily: 'MaterialIcons',
+                            ),
+                            label: category.name,
+                            color: Color(category.color),
+                            onTap: () => Navigator.pop(context, category.name),
+                          )),
+                      _buildCategoryChip(
+                        icon: Icons.add,
+                        label: 'Add new',
+                        color: Colors.grey[800]!,
+                        onTap: () async {
+                          final result = await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const CreateCategoryModal(),
+                          );
+
+                          if (result == true && mounted) {
+                            setState(() {}); // Refresh the list
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                  _buildCategoryChip(
-                    icon: Icons.receipt,
-                    label: 'Bills & Fees',
-                    color: Colors.pink,
-                    onTap: () => Navigator.pop(context, 'Bills & Fees'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.directions_bus,
-                    label: 'Transport',
-                    color: Colors.amber,
-                    onTap: () => Navigator.pop(context, 'Transport'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.shopping_basket,
-                    label: 'Groceries',
-                    color: const Color(0xFF00D8A5),
-                    onTap: () => Navigator.pop(context, 'Groceries'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.movie,
-                    label: 'Entertainment',
-                    color: Colors.orange,
-                    onTap: () => Navigator.pop(context, 'Entertainment'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.shopping_bag,
-                    label: 'Shopping',
-                    color: Colors.purple,
-                    onTap: () => Navigator.pop(context, 'Shopping'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.card_giftcard,
-                    label: 'Gifts',
-                    color: Colors.pink[200]!,
-                    onTap: () => Navigator.pop(context, 'Gifts'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.favorite,
-                    label: 'Health',
-                    color: Colors.blue,
-                    onTap: () => Navigator.pop(context, 'Health'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.trending_up,
-                    label: 'Investments',
-                    color: Colors.indigo,
-                    onTap: () => Navigator.pop(context, 'Investments'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.account_balance,
-                    label: 'Loans',
-                    color: Colors.teal,
-                    onTap: () => Navigator.pop(context, 'Loans'),
-                  ),
-                  _buildCategoryChip(
-                    icon: Icons.add,
-                    label: 'Add new',
-                    color: Colors.grey[800]!,
-                    onTap: () => Navigator.pop(context, 'Add new'),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
