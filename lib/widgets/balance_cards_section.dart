@@ -27,7 +27,7 @@ class BalanceCardsSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            '\₹12,435.62',
+            '\₹🖕 Gareeb!! Balance kya dekh raha hai kn hai 🤣',
             style: TextStyle(
               color: Colors.white,
               fontSize: 36,
