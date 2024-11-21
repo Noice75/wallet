@@ -46,9 +46,9 @@ class TransactionListState extends State<TransactionList> {
           children: snapshot.data!.map((item) {
             if (item['isHeader'] == true) {
               return _buildDateGroup(
-                date: '${item['displayDate']}.',
+                date: item['displayDate'],
                 day: item['dayName'],
-                amount: '${item['totalIncome']} USD',
+                amount: '${item['totalAmount']} USD',
                 transactions: const [], // This will be populated in the next items
               );
             }
@@ -85,6 +85,10 @@ class TransactionListState extends State<TransactionList> {
     required String amount,
     required List<Widget> transactions,
   }) {
+    final amountNum = double.parse(amount.replaceAll(' USD', ''));
+    final isNegative = amountNum < 0;
+    final displayAmount = isNegative ? amount : '+$amount';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -103,17 +107,16 @@ class TransactionListState extends State<TransactionList> {
                 ),
                 Text(
                   day,
-                  style: TextStyle(
-                    color: Colors.grey[600],
+                  style: const TextStyle(
                     fontSize: 16,
                   ),
                 ),
               ],
             ),
             Text(
-              amount,
-              style: const TextStyle(
-                color: Color(0xFF2AC89E),
+              displayAmount,
+              style: TextStyle(
+                color: isNegative ? Colors.red[400] : const Color(0xFF2AC89E),
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
@@ -135,6 +138,10 @@ class TransactionListState extends State<TransactionList> {
     required String bankName,
     bool showBank = true,
   }) {
+    final amountNum = double.parse(amount.replaceAll(' USD', ''));
+    final isExpense = amountNum < 0;
+    final displayAmount = '$amount USD';
+
     return FutureBuilder<Map<String, dynamic>>(
       future: DatabaseHelper.instance.getAccountForTransaction(bankName),
       builder: (context, accountSnapshot) {
@@ -214,17 +221,17 @@ class TransactionListState extends State<TransactionList> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    amount.contains('-')
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                    color: const Color(0xFF2AC89E),
+                    isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                    color:
+                        isExpense ? Colors.red[400] : const Color(0xFF2AC89E),
                     size: 20,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '$amount USD',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    displayAmount,
+                    style: TextStyle(
+                      color:
+                          isExpense ? Colors.red[400] : const Color(0xFF2AC89E),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),

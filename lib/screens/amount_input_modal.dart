@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import './income_screen.dart';
+import './expense_screen.dart';
 
 import '../database/database_helper.dart';
 
@@ -73,13 +74,21 @@ class _AmountInputModalState extends State<AmountInputModal> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => IncomeScreen(
-          type: widget.title,
-          amount: '$amount USD',
-          account: selectedAccount!.name,
-          autoOpenCategory: true,
-          onTransactionAdded: widget.onTransactionAdded,
-        ),
+        builder: (context) => widget.title == 'Income'
+            ? IncomeScreen(
+                type: widget.title,
+                amount: '$amount USD',
+                account: selectedAccount!.name,
+                autoOpenCategory: true,
+                onTransactionAdded: widget.onTransactionAdded,
+              )
+            : ExpenseScreen(
+                type: widget.title,
+                amount: '$amount USD',
+                account: selectedAccount!.name,
+                autoOpenCategory: true,
+                onTransactionAdded: widget.onTransactionAdded,
+              ),
       );
     }
   }
