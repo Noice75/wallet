@@ -490,7 +490,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
       final transaction = {
         'accountId': selectedAccountData['id'],
         'type': 'INCOME',
-        'amount': double.parse(widget.amount.replaceAll(' USD', '')),
+        'amount': double.parse(widget.amount.replaceAll(' INR', '')),
         'title':
             _titleController.text.isEmpty ? 'Income' : _titleController.text,
         'dateTime': selectedDateTime.millisecondsSinceEpoch,

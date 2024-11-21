@@ -48,7 +48,7 @@ class TransactionListState extends State<TransactionList> {
               return _buildDateGroup(
                 date: item['displayDate'],
                 day: item['dayName'],
-                amount: '${item['totalAmount']} USD',
+                amount: '${item['totalAmount']} INR',
                 transactions: const [], // This will be populated in the next items
               );
             }
@@ -85,7 +85,7 @@ class TransactionListState extends State<TransactionList> {
     required String amount,
     required List<Widget> transactions,
   }) {
-    final amountNum = double.parse(amount.replaceAll(' USD', ''));
+    final amountNum = double.parse(amount.replaceAll(' INR', ''));
     final isNegative = amountNum < 0;
     final displayAmount = isNegative ? amount : '+$amount';
 
@@ -138,9 +138,9 @@ class TransactionListState extends State<TransactionList> {
     required String bankName,
     bool showBank = true,
   }) {
-    final amountNum = double.parse(amount.replaceAll(' USD', ''));
+    final amountNum = double.parse(amount.replaceAll(' INR', ''));
     final isExpense = amountNum < 0;
-    final displayAmount = '$amount USD';
+    final displayAmount = '$amount INR';
 
     return FutureBuilder<Map<String, dynamic>>(
       future: DatabaseHelper.instance.getAccountForTransaction(bankName),

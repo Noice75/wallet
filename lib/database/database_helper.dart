@@ -185,7 +185,7 @@ class DatabaseHelper {
       {
         'id': uuid.v4(),
         'name': 'Cash',
-        'currency': 'USD',
+        'currency': 'INR',
         'color': const Color(0xFF2AC89E).value,
         'icon': 'cash',
         'orderNum': 0,
@@ -193,7 +193,7 @@ class DatabaseHelper {
       {
         'id': uuid.v4(),
         'name': 'Bank',
-        'currency': 'USD',
+        'currency': 'INR',
         'color': const Color(0xFF2AC89E).value,
         'icon': 'bank',
         'orderNum': 1,

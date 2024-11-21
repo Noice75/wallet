@@ -77,14 +77,14 @@ class _AmountInputModalState extends State<AmountInputModal> {
         builder: (context) => widget.title == 'Income'
             ? IncomeScreen(
                 type: widget.title,
-                amount: '$amount USD',
+                amount: '$amount INR',
                 account: selectedAccount!.name,
                 autoOpenCategory: true,
                 onTransactionAdded: widget.onTransactionAdded,
               )
             : ExpenseScreen(
                 type: widget.title,
-                amount: '$amount USD',
+                amount: '$amount INR',
                 account: selectedAccount!.name,
                 autoOpenCategory: true,
                 onTransactionAdded: widget.onTransactionAdded,

@@ -27,7 +27,7 @@ class DateSection extends StatelessWidget {
           ],
         ),
         Text(
-          '5,555.00 USD',
+          '5,555.00 INR',
           style: TextStyle(
             color: Color(0xFF2AC89E),
             fontSize: 16,
@@ -37,4 +37,4 @@ class DateSection extends StatelessWidget {
       ],
     );
   }
-} 
+}

@@ -480,7 +480,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       final transaction = {
         'accountId': selectedAccountData['id'],
         'type': 'EXPENSE',
-        'amount': double.parse(widget.amount.replaceAll(' USD', '')),
+        'amount': double.parse(widget.amount.replaceAll(' INR', '')),
         'title':
             _titleController.text.isEmpty ? 'Expense' : _titleController.text,
         'dateTime': selectedDateTime.millisecondsSinceEpoch,
