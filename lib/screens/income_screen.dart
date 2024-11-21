@@ -34,6 +34,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
   late TextEditingController _titleController;
   bool _isInitialCategorySelection = true;
   DateTime selectedDateTime = DateTime.now();
+  late String _editedAmount;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
     selectedAccount = widget.account;
     _titleFocusNode = FocusNode();
     _titleController = TextEditingController();
+    _editedAmount = widget.amount;
 
     if (widget.autoOpenCategory) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -490,7 +492,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
       final transaction = {
         'accountId': selectedAccountData['id'],
         'type': 'INCOME',
-        'amount': double.parse(widget.amount.replaceAll(' INR', '')),
+        'amount': double.parse(_editedAmount.replaceAll(' INR', '')),
         'title':
             _titleController.text.isEmpty ? 'Income' : _titleController.text,
         'dateTime': selectedDateTime.millisecondsSinceEpoch,
@@ -718,7 +720,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
               left: 24,
               right: 24,
               top: 24,
-              bottom: MediaQuery.of(context).padding.bottom + 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             ),
             decoration: BoxDecoration(
               color: Colors.grey[900],
@@ -728,29 +730,93 @@ class _IncomeScreenState extends State<IncomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.amount,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+                Expanded(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 200),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {
+                              // Show number pad or enable editing
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: const Color(0xFF1E1E1E),
+                                  title: const Text('Edit Amount'),
+                                  content: TextField(
+                                    controller: TextEditingController(
+                                        text: _editedAmount.replaceAll(
+                                            ' INR', '')),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    autofocus: true,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      color: Colors.white,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      suffixText: 'INR',
+                                      suffixStyle:
+                                          TextStyle(color: Colors.grey),
+                                    ),
+                                    onSubmitted: (value) {
+                                      Navigator.pop(context, value);
+                                    },
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(
+                                            context,
+                                            _editedAmount.replaceAll(
+                                                ' INR', ''));
+                                      },
+                                      child: const Text('Save'),
+                                    ),
+                                  ],
+                                ),
+                              ).then((value) {
+                                if (value != null) {
+                                  setState(() {
+                                    _editedAmount = '$value INR';
+                                  });
+                                }
+                              });
+                            },
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Text(
+                                _editedAmount.replaceAll(' INR', ''),
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF00D8A5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          ' INR',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      'Add to $selectedAccount',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 ElevatedButton.icon(
                   onPressed: _handleAddIncome,
-                  icon: const Icon(Icons.add, size: 24),
                   label: const Text(
                     'Add Income',
                     style: TextStyle(

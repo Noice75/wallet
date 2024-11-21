@@ -44,4 +44,12 @@ class Transaction {
       description: map['description'] as String?,
     );
   }
+
+  String getFormattedAmount() {
+    return '$amount INR';
+  }
+
+  String getDisplayAmount() {
+    return amount.toStringAsFixed(2);
+  }
 }

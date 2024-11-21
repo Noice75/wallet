@@ -34,6 +34,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   late TextEditingController _titleController;
   bool _isInitialCategorySelection = true;
   DateTime selectedDateTime = DateTime.now();
+  late String _editedAmount;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     selectedAccount = widget.account;
     _titleFocusNode = FocusNode();
     _titleController = TextEditingController();
+    _editedAmount = widget.amount;
 
     if (widget.autoOpenCategory) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -477,10 +479,12 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
         orElse: () => categories.first,
       );
 
+      final amount = double.parse(_editedAmount.replaceAll(' INR', '')).abs();
+
       final transaction = {
         'accountId': selectedAccountData['id'],
         'type': 'EXPENSE',
-        'amount': double.parse(widget.amount.replaceAll(' INR', '')),
+        'amount': amount,
         'title':
             _titleController.text.isEmpty ? 'Expense' : _titleController.text,
         'dateTime': selectedDateTime.millisecondsSinceEpoch,
@@ -687,7 +691,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
               left: 24,
               right: 24,
               top: 24,
-              bottom: MediaQuery.of(context).padding.bottom + 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             ),
             decoration: BoxDecoration(
               color: Colors.grey[900],
@@ -697,30 +701,101 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '-${widget.amount}',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red[400],
-                      ),
+                Expanded(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 200),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          '-',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {
+                              // Show number pad or enable editing
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: const Color(0xFF1E1E1E),
+                                  title: const Text('Edit Amount'),
+                                  content: TextField(
+                                    controller: TextEditingController(
+                                        text: _editedAmount.replaceAll(
+                                            ' INR', '')),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    autofocus: true,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      color: Colors.white,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      suffixText: 'INR',
+                                      suffixStyle:
+                                          TextStyle(color: Colors.grey),
+                                    ),
+                                    onSubmitted: (value) {
+                                      Navigator.pop(context, value);
+                                    },
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(
+                                            context,
+                                            _editedAmount.replaceAll(
+                                                ' INR', ''));
+                                      },
+                                      child: const Text('Save'),
+                                    ),
+                                  ],
+                                ),
+                              ).then((value) {
+                                if (value != null) {
+                                  setState(() {
+                                    _editedAmount = '$value INR';
+                                  });
+                                }
+                              });
+                            },
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Text(
+                                _editedAmount.replaceAll(' INR', ''),
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red[400],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          ' INR',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      'Subtract from $selectedAccount',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 ElevatedButton.icon(
                   onPressed: _handleAddExpense,
-                  icon: const Icon(Icons.remove, size: 24),
                   label: const Text(
                     'Add Expense',
                     style: TextStyle(

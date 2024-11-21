@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import '../screens/transaction_detail_screen.dart';
 
 class TransactionList extends StatefulWidget {
   const TransactionList({super.key});
@@ -53,25 +54,46 @@ class TransactionListState extends State<TransactionList> {
               );
             }
 
-            return FutureBuilder<Map<String, dynamic>>(
-              future: DatabaseHelper.instance
-                  .getCategoryForTransaction(item['categoryId']),
-              builder: (context, categorySnapshot) {
-                if (!categorySnapshot.hasData) return const SizedBox();
-
-                return _buildTransactionItem(
-                  context,
-                  category: item['title'] ?? categorySnapshot.data!['name'],
-                  amount: item['amount'].toString(),
-                  icon: IconData(
-                    int.parse(categorySnapshot.data!['icon'], radix: 16),
-                    fontFamily: 'MaterialIcons',
+            return GestureDetector(
+              onTap: () async {
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => TransactionDetailScreen(
+                    transaction: item,
+                    onTransactionUpdated: () {
+                      setState(() {
+                        _loadTransactions();
+                      });
+                    },
                   ),
-                  iconBackgroundColor: Color(categorySnapshot.data!['color']),
-                  bankName: item['accountId'],
-                  showBank: true,
                 );
+                setState(() {
+                  _loadTransactions();
+                });
               },
+              child: FutureBuilder<Map<String, dynamic>>(
+                future: DatabaseHelper.instance
+                    .getCategoryForTransaction(item['categoryId']),
+                builder: (context, categorySnapshot) {
+                  if (!categorySnapshot.hasData) return const SizedBox();
+
+                  return _buildTransactionItem(
+                    context,
+                    category: item['title'] ?? categorySnapshot.data!['name'],
+                    amount: item['amount'].toString(),
+                    icon: IconData(
+                      int.parse(categorySnapshot.data!['icon'], radix: 16),
+                      fontFamily: 'MaterialIcons',
+                    ),
+                    iconBackgroundColor: Color(categorySnapshot.data!['color']),
+                    bankName: item['accountId'],
+                    type: item['type'],
+                    showBank: true,
+                  );
+                },
+              ),
             );
           }).toList(),
         );
@@ -86,8 +108,7 @@ class TransactionListState extends State<TransactionList> {
     required List<Widget> transactions,
   }) {
     final amountNum = double.parse(amount.replaceAll(' INR', ''));
-    final isNegative = amountNum < 0;
-    final displayAmount = isNegative ? amount : '+$amount';
+    final displayAmount = '${amountNum > 0 ? "+" : ""}$amountNum';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,16 +130,40 @@ class TransactionListState extends State<TransactionList> {
                   day,
                   style: const TextStyle(
                     fontSize: 16,
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
-            Text(
-              displayAmount,
-              style: TextStyle(
-                color: isNegative ? Colors.red[400] : const Color(0xFF2AC89E),
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+            Container(
+              constraints: const BoxConstraints(maxWidth: 150),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        displayAmount,
+                        style: TextStyle(
+                          color: amountNum < 0
+                              ? Colors.red[400]
+                              : const Color(0xFF2AC89E),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    ' INR',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -136,11 +181,11 @@ class TransactionListState extends State<TransactionList> {
     required IconData icon,
     required Color iconBackgroundColor,
     required String bankName,
+    required String type,
     bool showBank = true,
   }) {
-    final amountNum = double.parse(amount.replaceAll(' INR', ''));
-    final isExpense = amountNum < 0;
-    final displayAmount = '$amount INR';
+    final amountNum = double.parse(amount);
+    final isExpense = type == 'EXPENSE';
 
     return FutureBuilder<Map<String, dynamic>>(
       future: DatabaseHelper.instance.getAccountForTransaction(bankName),
@@ -218,7 +263,7 @@ class TransactionListState extends State<TransactionList> {
                 ),
               ),
               Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Icon(
                     isExpense ? Icons.arrow_downward : Icons.arrow_upward,
@@ -227,13 +272,35 @@ class TransactionListState extends State<TransactionList> {
                     size: 20,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    displayAmount,
-                    style: TextStyle(
-                      color:
-                          isExpense ? Colors.red[400] : const Color(0xFF2AC89E),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 150),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Text(
+                              '${isExpense ? "-" : ""}${amountNum.abs().toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: isExpense
+                                    ? Colors.red[400]
+                                    : const Color(0xFF2AC89E),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          ' INR',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

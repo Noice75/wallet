@@ -293,9 +293,21 @@ class DatabaseHelper {
     );
   }
 
+  void printDatabase() async {
+    Database db = await database;
+
+    // Get all tables (replace 'example' with your table name)
+    List<Map<String, dynamic>> rows = await db.query('transactions');
+
+    // Print each row
+    for (var row in rows) {
+      print(row); // This prints each row as a map
+    }
+  }
+
   Future<int> insertTransaction(Map<String, dynamic> transaction) async {
     final db = await database;
-
+    printDatabase();
     if (!transaction.containsKey('id')) {
       transaction['id'] = const Uuid().v4();
     }
@@ -440,6 +452,7 @@ class DatabaseHelper {
     );
 
     final Map<String, List<Map<String, dynamic>>> groupedTransactions = {};
+    final Map<String, double> dailyTotals = {};
 
     for (var transaction in transactions) {
       final date =
@@ -448,12 +461,14 @@ class DatabaseHelper {
 
       if (!groupedTransactions.containsKey(dateKey)) {
         groupedTransactions[dateKey] = [];
+        dailyTotals[dateKey] = 0;
       }
 
-      // Convert expense amounts to negative
+      final amount = (transaction['amount'] as num).toDouble();
       if (transaction['type'] == 'EXPENSE') {
-        transaction = Map<String, dynamic>.from(transaction);
-        transaction['amount'] = -(transaction['amount'] as num).toDouble();
+        dailyTotals[dateKey] = dailyTotals[dateKey]! - amount;
+      } else {
+        dailyTotals[dateKey] = dailyTotals[dateKey]! + amount;
       }
 
       groupedTransactions[dateKey]!.add(transaction);
@@ -462,26 +477,44 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> result = [];
 
     groupedTransactions.forEach((date, transactions) {
-      // Calculate daily totals
-      double dailyTotal = 0;
-      for (var transaction in transactions) {
-        dailyTotal += transaction['amount'] as double;
-      }
-
       final dateTime = DateTime.parse(date);
-      final isToday = _isToday(dateTime);
-      final dayName = isToday ? 'Today' : _getDayName(dateTime);
+      final dayNames = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ];
+      final months = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+      ];
 
-      // Add date header with net total
+      // Check if the date is today
+      final now = DateTime.now();
+      final isToday = dateTime.year == now.year &&
+          dateTime.month == now.month &&
+          dateTime.day == now.day;
+
       result.add({
         'isHeader': true,
-        'date': date,
-        'displayDate': '${_getMonthName(dateTime.month)} ${dateTime.day}',
-        'dayName': dayName,
-        'totalAmount': '${dailyTotal.toStringAsFixed(2)}',
+        'displayDate': '${months[dateTime.month - 1]} ${dateTime.day}',
+        'dayName': isToday ? 'Today' : dayNames[dateTime.weekday - 1],
+        'totalAmount': dailyTotals[date]?.toStringAsFixed(2) ?? '0.00',
       });
 
-      // Add transactions for this date
       result.addAll(transactions);
     });
 

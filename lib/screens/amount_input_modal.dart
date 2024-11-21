@@ -139,11 +139,18 @@ class _AmountInputModalState extends State<AmountInputModal> {
             padding: const EdgeInsets.all(24),
             child: GestureDetector(
               onTap: _handleSubmit,
-              child: Text(
-                amount,
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
+              child: Container(
+                width: double.infinity,
+                alignment: Alignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    amount,
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
