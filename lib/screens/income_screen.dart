@@ -4,6 +4,7 @@ import '../widgets/category_selection_modal.dart';
 import '../models/account.dart';
 import '../database/database_helper.dart';
 import '../widgets/create_account_modal.dart';
+import 'package:flutter/services.dart';
 
 class IncomeScreen extends StatefulWidget {
   final String type;
@@ -32,6 +33,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
   late String selectedAccount;
   late FocusNode _titleFocusNode;
   late TextEditingController _titleController;
+  late TextEditingController _amountController;
   bool _isInitialCategorySelection = true;
   DateTime selectedDateTime = DateTime.now();
   late String _editedAmount;
@@ -42,6 +44,8 @@ class _IncomeScreenState extends State<IncomeScreen> {
     selectedAccount = widget.account;
     _titleFocusNode = FocusNode();
     _titleController = TextEditingController();
+    _amountController =
+        TextEditingController(text: widget.amount.replaceAll(' INR', ''));
     _editedAmount = widget.amount;
 
     if (widget.autoOpenCategory) {
@@ -55,6 +59,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
   void dispose() {
     _titleFocusNode.dispose();
     _titleController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -736,70 +741,29 @@ class _IncomeScreenState extends State<IncomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Flexible(
-                          child: GestureDetector(
-                            onTap: () {
-                              // Show number pad or enable editing
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor: const Color(0xFF1E1E1E),
-                                  title: const Text('Edit Amount'),
-                                  content: TextField(
-                                    controller: TextEditingController(
-                                        text: _editedAmount.replaceAll(
-                                            ' INR', '')),
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    autofocus: true,
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      color: Colors.white,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      suffixText: 'INR',
-                                      suffixStyle:
-                                          TextStyle(color: Colors.grey),
-                                    ),
-                                    onSubmitted: (value) {
-                                      Navigator.pop(context, value);
-                                    },
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(
-                                            context,
-                                            _editedAmount.replaceAll(
-                                                ' INR', ''));
-                                      },
-                                      child: const Text('Save'),
-                                    ),
-                                  ],
-                                ),
-                              ).then((value) {
-                                if (value != null) {
-                                  setState(() {
-                                    _editedAmount = '$value INR';
-                                  });
-                                }
+                        SizedBox(
+                          width: 150,
+                          child: TextField(
+                            controller: _amountController,
+                            onChanged: (value) {
+                              setState(() {
+                                _editedAmount = '$value INR';
                               });
                             },
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Text(
-                                _editedAmount.replaceAll(' INR', ''),
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF00D8A5),
-                                ),
-                              ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d{0,2}')),
+                            ],
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF00D8A5),
+                            ),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
                             ),
                           ),
                         ),
@@ -817,6 +781,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 ),
                 ElevatedButton.icon(
                   onPressed: _handleAddIncome,
+                  // icon: const Icon(Icons.add, size: 24),
                   label: const Text(
                     'Add Income',
                     style: TextStyle(

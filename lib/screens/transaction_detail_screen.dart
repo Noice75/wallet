@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/category_selection_modal.dart';
 import '../models/account.dart';
 import '../database/database_helper.dart';
@@ -813,6 +814,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                                           controller: _amountController,
                                           keyboardType: const TextInputType
                                               .numberWithOptions(decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                                RegExp(r'^\d*\.?\d{0,2}')),
+                                          ],
                                           style: TextStyle(
                                             fontSize: 28,
                                             fontWeight: FontWeight.bold,
