@@ -30,8 +30,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateBalanceData() async {
-    final income = await DatabaseHelper.instance.getTotalByType(TransactionType.INCOME);
-    final expenses = await DatabaseHelper.instance.getTotalByType(TransactionType.EXPENSE);
+    final income =
+        await DatabaseHelper.instance.getTotalByType(TransactionType.INCOME);
+    final expenses =
+        await DatabaseHelper.instance.getTotalByType(TransactionType.EXPENSE);
     setState(() {
       _totalIncome = income;
       _totalExpenses = expenses;
@@ -112,6 +114,7 @@ class _HomePageState extends State<HomePage> {
                           title: 'Expense',
                           onTransactionAdded: () {
                             _transactionListKey.currentState?.refresh();
+                            _updateBalanceData();
                           },
                         ),
                       );
