@@ -8,6 +8,8 @@ import '../widgets/transaction_list.dart';
 
 import '../screens/amount_input_modal.dart';
 
+import '../database/database_helper.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -17,6 +19,25 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey<TransactionListState> _transactionListKey = GlobalKey();
+  double _totalBalance = 0.0;
+  double _totalIncome = 0.0;
+  double _totalExpenses = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateBalanceData();
+  }
+
+  Future<void> _updateBalanceData() async {
+    final income = await DatabaseHelper.instance.getTotalByType(TransactionType.INCOME);
+    final expenses = await DatabaseHelper.instance.getTotalByType(TransactionType.EXPENSE);
+    setState(() {
+      _totalIncome = income;
+      _totalExpenses = expenses;
+      _totalBalance = income - expenses;
+    });
+  }
 
   void _showAddTransactionModal(BuildContext context) {
     showModalBottomSheet(
@@ -70,6 +91,7 @@ class _HomePageState extends State<HomePage> {
                           title: 'Income',
                           onTransactionAdded: () {
                             _transactionListKey.currentState?.refresh();
+                            _updateBalanceData();
                           },
                         ),
                       );
@@ -206,7 +228,11 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 16),
                 const HeaderSection(),
                 const SizedBox(height: 24),
-                const BalanceCardsSection(),
+                BalanceCardsSection(
+                  totalBalance: _totalBalance,
+                  totalIncome: _totalIncome,
+                  totalExpenses: _totalExpenses,
+                ),
                 const SizedBox(height: 32),
                 TransactionList(key: _transactionListKey),
                 const SizedBox(height: 80),

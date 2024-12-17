@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
 class BalanceCardsSection extends StatelessWidget {
-  const BalanceCardsSection({super.key});
+  final double totalBalance;
+  final double totalIncome;
+  final double totalExpenses;
+
+  const BalanceCardsSection({
+    super.key,
+    required this.totalBalance,
+    required this.totalIncome,
+    required this.totalExpenses,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +35,9 @@ class BalanceCardsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '\₹🖕 Gareeb!! Balance kya dekh raha hai kn hai 🤣',
-            style: TextStyle(
+          Text(
+            '\₹$totalBalance',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 36,
               fontWeight: FontWeight.bold,
@@ -41,12 +50,12 @@ class BalanceCardsSection extends StatelessWidget {
             children: [
               _buildBalanceItem(
                 label: 'Income',
-                amount: '+\₹2,450.00',
+                amount: '+\₹$totalIncome',
                 icon: Icons.arrow_upward_rounded,
               ),
               _buildBalanceItem(
                 label: 'Expenses',
-                amount: '-\₹1,350.00',
+                amount: '-\₹$totalExpenses',
                 icon: Icons.arrow_downward_rounded,
               ),
             ],
