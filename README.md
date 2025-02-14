@@ -1,10 +1,15 @@
 # wallet
 
-A new Flutter project.
+A accounting app to manage your finances made in Flutter.
 
-## Getting Started
+## Screenshots of the app
+![Alt text](./1.png)
 
-This project is a starting point for a Flutter application.
+![Alt text](./2.png)
+
+![Alt text](./3.png)
+
+![Alt text](./4.png)
 
 A few resources to get you started if this is your first Flutter project:
 
